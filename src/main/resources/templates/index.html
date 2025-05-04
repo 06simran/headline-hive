@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Headline Hive</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; background: #f5f7fa; color: #333; }
+        .header { background: #2b6cb0; color: white; padding: 10px 20px; }
+        .header h1 { margin: 0; font-size: 24px; }
+        marquee { background: #bee3f8; color: #2a4365; padding: 5px 0; font-weight: bold; }
+        .container { display: flex; }
+        .sidebar { width: 200px; background: #edf2f7; padding: 20px; }
+        .sidebar h2 { font-size: 18px; margin-bottom: 10px; }
+        .sidebar ul { list-style: none; padding: 0; }
+        .sidebar li { margin-bottom: 8px; }
+        .sidebar a { text-decoration: none; color: #2b6cb0; font-weight: 500; }
+        .content { flex: 1; padding: 20px; }
+        .article { background: white; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden; }
+        .article img { width: 100%; height: auto; }
+        .article-content { padding: 15px; }
+        .article-content h2 { margin: 0 0 10px; font-size: 20px; color: #2b6cb0; }
+        .article-content p { margin: 0 0 10px; line-height: 1.5; }
+        .article-content a { color: #3182ce; text-decoration: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>📰 Headline Hive</h1>
+    <marquee behavior="scroll" direction="left" scrollamount="5">
+        Live Bulletin: Stay tuned for breaking news and updates!
+    </marquee>
+</div>
+
+<div class="container">
+    <div class="sidebar">
+        <h2>Categories</h2>
+        <ul>
+            <li><a th:href="@{'/?category=business'}">Business</a></li>
+            <li><a th:href="@{'/?category=entertainment'}">Entertainment</a></li>
+            <li><a th:href="@{'/?category=health'}">Health</a></li>
+            <li><a th:href="@{'/?category=science'}">Science</a></li>
+            <li><a th:href="@{'/?category=sports'}">Sports</a></li>
+            <li><a th:href="@{'/?category=technology'}">Technology</a></li>
+            <li><a th:href="@{'/?category=climate'}">Climate</a></li>
+            <li><a th:href="@{'/'}">All</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <!-- Check if articles are available and display them -->
+        <div th:if="${not #lists.isEmpty(articles)}">
+            <div th:each="article : ${articles}" class="article">
+                <img th:if="${article.urlToImage != null}" th:src="${article.urlToImage}" alt="News Image"/>
+                <div class="article-content">
+                    <h2 th:text="${article.title}">News Title</h2>
+                    <p th:text="${article.description}">News Description</p>
+                    <a th:href="${article.url}" target="_blank">Read more →</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- If no articles are available -->
+        <div th:if="${#lists.isEmpty(articles)}">
+            <p>No articles available</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>
