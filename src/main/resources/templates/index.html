@@ -11,16 +11,124 @@
         .container { display: flex; }
         .sidebar { width: 200px; background: #edf2f7; padding: 20px; }
         .sidebar h2 { font-size: 18px; margin-bottom: 10px; }
-        .sidebar ul { list-style: none; padding: 0; }
-        .sidebar li { margin-bottom: 8px; }
-        .sidebar a { text-decoration: none; color: #2b6cb0; font-weight: 500; }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar li {
+            margin-bottom: 8px;
+        }
+        .sidebar a {
+            text-decoration: none;
+            color: #2b6cb0;
+            font-weight: 500;
+            padding-bottom: 2px;
+            display: inline-block;
+            cursor: pointer;
+        }
+        .sidebar a.active {
+            font-weight: 700;
+            border-bottom: 2px solid #2b6cb0;
+        }
+        .login-link-container {
+            margin-top: 30px; /* gap before login */
+        }
         .content { flex: 1; padding: 20px; }
         .article { background: white; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden; }
-        .article img { width: 100%; height: auto; }
+        .article img {
+            max-width: 150px;
+            max-height: 100px;
+            width: auto;
+            height: auto;
+            display: block;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            object-fit: cover;
+        }
         .article-content { padding: 15px; }
         .article-content h2 { margin: 0 0 10px; font-size: 20px; color: #2b6cb0; }
         .article-content p { margin: 0 0 10px; line-height: 1.5; }
         .article-content a { color: #3182ce; text-decoration: none; font-weight: 600; }
+
+        /* Login popup styles */
+        #login-popup {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            padding: 20px;
+            width: 300px;
+            box-sizing: border-box;
+        }
+        #login-popup h3 {
+            margin-top: 0;
+            color: #2b6cb0;
+        }
+        #login-popup label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        #login-popup input[type="email"],
+        #login-popup input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        #login-popup button {
+            background-color: #2b6cb0;
+            color: white;
+            padding: 10px;
+            width: 100%;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        #login-popup button:hover {
+            background-color: #1a4a82;
+        }
+        #login-popup .close-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 18px;
+            color: #666;
+        }
+        #login-popup .signup-line {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+        #login-popup .signup-line a {
+            color: #2b6cb0;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        #login-popup .signup-line a:hover {
+            text-decoration: underline;
+        }
+        #overlay {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4);
+        }
     </style>
 </head>
 <body>
@@ -35,19 +143,22 @@
     <div class="sidebar">
         <h2>Categories</h2>
         <ul>
-            <li><a th:href="@{'/?category=business'}">Business</a></li>
-            <li><a th:href="@{'/?category=entertainment'}">Entertainment</a></li>
-            <li><a th:href="@{'/?category=health'}">Health</a></li>
-            <li><a th:href="@{'/?category=science'}">Science</a></li>
-            <li><a th:href="@{'/?category=sports'}">Sports</a></li>
-            <li><a th:href="@{'/?category=technology'}">Technology</a></li>
-            <li><a th:href="@{'/?category=climate'}">Climate</a></li>
-            <li><a th:href="@{'/'}">All</a></li> <!-- Link for 'All' category -->
+            <li><a th:href="@{'/?category=business'}" th:classappend="${category == 'business'} ? 'active' : ''">Business</a></li>
+            <li><a th:href="@{'/?category=entertainment'}" th:classappend="${category == 'entertainment'} ? 'active' : ''">Entertainment</a></li>
+            <li><a th:href="@{'/?category=health'}" th:classappend="${category == 'health'} ? 'active' : ''">Health</a></li>
+            <li><a th:href="@{'/?category=science'}" th:classappend="${category == 'science'} ? 'active' : ''">Science</a></li>
+            <li><a th:href="@{'/?category=sports'}" th:classappend="${category == 'sports'} ? 'active' : ''">Sports</a></li>
+            <li><a th:href="@{'/?category=technology'}" th:classappend="${category == 'technology'} ? 'active' : ''">Technology</a></li>
+            <li><a th:href="@{'/?category=climate'}" th:classappend="${category == 'climate'} ? 'active' : ''">Climate</a></li>
+            <li><a th:href="@{'/'}" th:classappend="${category == null} ? 'active' : ''">All</a></li>
         </ul>
+        <div class="login-link-container">
+            <a href="#" id="login-link">Login</a>
+        </div>
     </div>
 
     <div class="content">
-        <!-- Check if articles are available and display them -->
+        <!-- Articles rendering as before -->
         <div th:if="${not #lists.isEmpty(articles)}">
             <div th:each="article : ${articles}" class="article">
                 <img th:if="${article.urlToImage != null}" th:src="${article.urlToImage}" alt="News Image"/>
@@ -58,7 +169,52 @@
                 </div>
             </div>
         </div>
-
-        <!-- If no articles are available -->
         <div th:if="${#lists.isEmpty(articles)}">
-            <p>No</p></div></div></div></body></html>
+            <p>No articles available.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Login Popup -->
+<div id="overlay"></div>
+<div id="login-popup">
+    <span class="close-btn" id="close-login">&times;</span>
+    <h3>Login</h3>
+    <form method="post" action="/login" th:action="@{/login}">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required/>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required/>
+
+        <button type="submit">Login</button>
+    </form>
+    <div class="signup-line">
+        New user? <a href="/signup" th:href="@{/signup}">Sign up</a>
+    </div>
+</div>
+
+<script>
+    const loginLink = document.getElementById('login-link');
+    const loginPopup = document.getElementById('login-popup');
+    const closeLoginBtn = document.getElementById('close-login');
+    const overlay = document.getElementById('overlay');
+
+    loginLink.addEventListener('click', function(event) {
+        event.preventDefault();
+        loginPopup.style.display = 'block';
+        overlay.style.display = 'block';
+    });
+
+    closeLoginBtn.addEventListener('click', function() {
+        loginPopup.style.display = 'none';
+        overlay.style.display = 'none';
+    });
+
+    overlay.addEventListener('click', function() {
+        loginPopup.style.display = 'none';
+        overlay.style.display = 'none';
+    });
+</script>
+</body>
+</html>
