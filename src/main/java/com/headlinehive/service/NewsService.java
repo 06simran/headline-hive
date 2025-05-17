@@ -2,67 +2,71 @@ package com.headlinehive.service;
 
 import com.headlinehive.model.Article;
 import com.headlinehive.model.NewsResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Collections;
 import java.util.List;
 
 @Service
 public class NewsService {
 
-    private final RestTemplate restTemplate;
-
-    @Value("${newsapi.url}")
-    private String apiUrl;
-
-    @Value("${newsapi.country}")
-    private String country;
+    private static final Logger logger = LoggerFactory.getLogger(NewsService.class);
 
     @Value("${newsapi.key}")
     private String apiKey;
 
-    @Value("${newsapi.everything.url}")
-    private String everythingUrl;
+    @Value("${newsapi.url}")
+    private String baseUrl;
 
-    @Value("${newsapi.everything.query}")
-    private String everythingQuery;
+    @Value("${newsapi.country}")
+    private String country;
+
+    private final RestTemplate restTemplate;
 
     public NewsService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
-    public List<Article> getTopArticles() {
-        System.out.println("🔍 NewsService#getTopArticles() called");
-
-        // Top Headlines URL
-        String url = String.format("%s?country=%s&apiKey=%s", apiUrl, country, apiKey);
-        System.out.println("Calling NewsAPI: " + url);
-
-        ResponseEntity<NewsResponse> resp = restTemplate.getForEntity(url, NewsResponse.class);
-        NewsResponse news = resp.getBody();
-
-        if (news == null || news.getArticles() == null || news.getArticles().isEmpty()) {
-            System.out.println("⚠️ No top headlines, fallback to Everything API");
-
-            // Fallback to Everything API
-            String everythingUrl = String.format("%s?q=%s&apiKey=%s", this.everythingUrl, everythingQuery, apiKey);
-            System.out.println("Calling NewsAPI Everything: " + everythingUrl);
-            ResponseEntity<NewsResponse> allResp = restTemplate.getForEntity(everythingUrl, NewsResponse.class);
-            news = allResp.getBody();
+    public List<Article> fetchNews(String category) {
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new IllegalStateException("API Key is missing. Please check your application.properties.");
         }
 
-        if (news == null || news.getArticles() == null) {
-            System.out.println("⚠️ Articles list is null");
-            return Collections.emptyList();
+        StringBuilder urlBuilder = new StringBuilder(baseUrl)
+                .append("?country=").append(country);
+
+        // If category is null or "all", don't append the category parameter
+        if (category != null && !category.equalsIgnoreCase("all")) {
+            urlBuilder.append("&category=").append(category);
         }
 
-        System.out.println("🔍 totalResults = " + news.getTotalResults());
-        System.out.println("🔍 articles.size = " + news.getArticles().size());
-        news.getArticles().forEach(a -> System.out.println(" • " + a.getTitle()));
+        urlBuilder.append("&apiKey=").append(apiKey);
 
-        return news.getArticles();
+        String url = urlBuilder.toString();
+        logger.info("Fetching news from URL: {}", url);
+
+        NewsResponse response = null;
+        try {
+            response = restTemplate.getForObject(url, NewsResponse.class);
+        } catch (Exception e){
+            logger.error("Error fetching news from API", e);
+        }
+
+        if (response == null) {
+            logger.warn("NewsResponse is null");
+            return List.of();
+        }
+
+        logger.info("API status: {}, totalResults: {}", response.getStatus(), response.getTotalResults());
+
+        if (response.getArticles() == null || response.getArticles().isEmpty()) {
+            logger.warn("No articles found in response");
+            return List.of();
+        }
+
+        return response.getArticles();
     }
 }

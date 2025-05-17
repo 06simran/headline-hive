@@ -1,32 +1,25 @@
 package com.headlinehive.controller;
 
-import com.headlinehive.service.NewsService;
 import com.headlinehive.model.Article;
+import com.headlinehive.service.NewsService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
-@Controller
+@RestController
+@RequestMapping("/api/news")
 public class NewsController {
 
-    private final NewsService newsService;
-
-    // Constructor-based injection
     @Autowired
-    public NewsController(NewsService newsService) {
-        this.newsService = newsService;
+    private NewsService newsService;
+
+    @GetMapping
+    public List<Article> getNews(@RequestParam(required = false) String category) {
+        // If no category or 'all' is selected, fetch all news
+        if (category == null || category.equalsIgnoreCase("all")) {
+            return newsService.fetchNews(null);  // Pass null to fetch all categories
+        }
+        return newsService.fetchNews(category);  // Fetch specific category
     }
-
-    @GetMapping("/")
-    public String getTopArticles(Model model) {
-        // Fetch top articles using NewsService
-        List<Article> articles = newsService.getTopArticles();
-
-        // Add articles to the model
-        model.addAttribute("articles", articles);
-        return "index";  // Thymeleaf view name (index.html)
-    }
-
 }

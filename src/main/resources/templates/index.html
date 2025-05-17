@@ -42,7 +42,7 @@
             <li><a th:href="@{'/?category=sports'}">Sports</a></li>
             <li><a th:href="@{'/?category=technology'}">Technology</a></li>
             <li><a th:href="@{'/?category=climate'}">Climate</a></li>
-            <li><a th:href="@{'/'}">All</a></li>
+            <li><a th:href="@{'/'}">All</a></li> <!-- Link for 'All' category -->
         </ul>
     </div>
 
@@ -61,9 +61,4 @@
 
         <!-- If no articles are available -->
         <div th:if="${#lists.isEmpty(articles)}">
-            <p>No articles available</p>
-        </div>
-    </div>
-</div>
-</body>
-</html>
+            <p>No</p></div></div></div></body></html>

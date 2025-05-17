@@ -1,9 +1,5 @@
 package com.headlinehive;
 
-
-
-
-
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -15,10 +11,8 @@ public class HeadlineHiveApplication {
         SpringApplication.run(HeadlineHiveApplication.class, args);
     }
 
-    // ← This is essential so you can @Autowired RestTemplate
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
 }
-

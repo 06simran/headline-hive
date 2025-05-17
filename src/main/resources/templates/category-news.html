@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${category} + ' News'">News</title>
+</head>
+<body>
+<h1 th:text="${category} + ' News'"></h1>
+<a href="/">← Back to Categories</a>
+<ul>
+    <li th:each="news : ${newsList}">
+        <h3 th:text="${news.title}"></h3>
+        <p th:text="${news.description}"></p>
+    </li>
+</ul>
+</body>
+</html>
