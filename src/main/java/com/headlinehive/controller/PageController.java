@@ -21,6 +21,8 @@ public class PageController {
     @Autowired
     private NewsService newsService;
 
+
+
     @GetMapping("/")
     public String index(@RequestParam(required = false) String category, Model model) {
         logger.info("Loading home page with category: {}", category);
